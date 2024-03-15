@@ -3,13 +3,13 @@ from PyQt6.QtWidgets import QWidget, QDialog, QInputDialog, QLineEdit
 from datetime import date, datetime
 from icecream import ic
 
-from .uiDesigns.addRanchoWindow import Ui_addRanchoWindow
-from .uiDesigns.addVariedadWindow import Ui_addVariedadWindow
-from .uiDesigns.addParcelaWindow import Ui_addParcelaWindow
-from .uiDesigns.addCosechaWindow import Ui_addCosechaWindow
-from .Scripts.Validation import validate
-from .Scripts.BaseWindowClasses import BaseInsertWindow
-from .GPS.Coordinates import getCoordinates
+from utils.Interface.uiDesigns.addRanchoWindow import Ui_addRanchoWindow
+from utils.Interface.uiDesigns.addVariedadWindow import Ui_addVariedadWindow
+from utils.Interface.uiDesigns.addParcelaWindow import Ui_addParcelaWindow
+from utils.Interface.uiDesigns.addCosechaWindow import Ui_addCosechaWindow
+from utils.Interface.Scripts.Validation import validate
+from utils.Interface.Scripts.BaseWindowClasses import BaseInsertWindow
+from utils.GPS.Coordinates import getCoordinates
 from utils.Interface.ObjectDictionaries import ValidationDict
 
 class InsertRanchoWindow(BaseInsertWindow, Ui_addRanchoWindow):
