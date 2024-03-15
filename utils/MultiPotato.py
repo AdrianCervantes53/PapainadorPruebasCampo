@@ -13,38 +13,28 @@ from utils.DB.datosConexionBD import Datos
 from utils.Camera.realsense_depth_filter import *
 from utils.Interface.Scripts.MassEstimation import calculateMass, calculateVolume
 
-class Potato():
+class MultiPapa():
     calibres = {"Suprema": 140, "Primera": 110, "Segunda": 80, "Tercera": 60, "Cuarta": 40}
                 #                    220+    ,   185-220    ,    150-185   ,     120-150
 
-    def __init__(self, serialNumber, modelName="potato_seg3s.pt", DataBase=True):
-        BASE_PATH = "models/"
-        
-        modelo1 = YOLO(BASE_PATH + modelName, task = 'segment')
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        modelo1.to(device)
-
-        modelo2 = YOLO(BASE_PATH + modelName, task = 'segment')
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        modelo2.to(device)
-
-        self.modelos = [modelo1, modelo2]
+    def __init__(self, serialNumber, DataBase):
         self.serialNumber = serialNumber
 
-        if DataBase:
-            self.ConexionBD = Creacion(Datos)
+        self.ConexionBD = DataBase
         
         self.setParameters()
         self.papa_contada = []
         self.contador = 0
+        self.cameraCreation()
+        self.ret = False
     
     def cameraCreation(self):
-        self.camara1 = DepthCamera(self.serialNumber[0])
-        self.camara2 = DepthCamera(self.serialNumber[1])
+        self.camara = DepthCamera(self.serialNumber)
+
     
     def checkConnection(self):
-        ret, _, _, _ = self.camara1.getFrame()
-        ret, _, _, _ = self.camara1.getFrame()
+        ret, _, _, _ = self.camara.getFrame()
+        ret, _, _, _ = self.camara.getFrame()
         return ret
 
     def setParameters(self, conf=0.2, iou=0.85):
@@ -62,17 +52,25 @@ class Potato():
         self.lim = sectionLim
         frame_det = frame[:self.lim, :, :].copy()
         with torch.no_grad():
-            results = self.modelos[0].track(frame_det, conf = self.conf, iou = self.iou, persist=True, verbose = False, show_labels=False, show_conf=False, augment=False)
+            results = self.model.track(frame_det, conf = self.conf, iou = self.iou, persist=True, verbose = False, show_labels=False, show_conf=False, augment=False)
         return results
     
-    def frameInference2(self, frame, sectionLim=300):
-        self.tiempoFrame = time.time()
-        self.lim = sectionLim
-        frame_det = frame[:self.lim, :, :].copy()
-        with torch.no_grad():
-            results = self.modelos[1].track(frame_det, conf = self.conf, iou = self.iou, persist=True, verbose = False, show_labels=False, show_conf=False, augment=False)
-        return results
     
+    def mainPotato(self):
+        
+        BASE_PATH = "models/"
+        modelName = "potato_seg3s.pt"
+        self.model = YOLO(BASE_PATH + modelName, task = 'segment')
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        ic(device)
+        #self.model.to(device)
+        while True:
+            self.ret, depthFrame, frame, _ = self.camara.getFrame()
+            if self.ret:
+                ic("yey")
+                results = self.frameInference(frame)
+                self.frame = self.drawInference(frame, depthFrame, results)
+
     def drawInference(self, frame, depthFrame, results, showFPS=True, countOffset = 50):
         if 0 in results[0].boxes.shape or results[0].boxes.id == None:
             pass
@@ -83,7 +81,7 @@ class Potato():
 
             for box, track_id, mask in zip(boxes, track_ids, masks):
                 m = np.array(mask.cpu())
-                resized = cv2.resize(m, (self.camara1.w, self.camara1.h), interpolation = cv2.INTER_AREA)
+                resized = cv2.resize(m, (self.camara.w, self.camara.h), interpolation = cv2.INTER_AREA)
                 m2 = (resized * 255).clip(0, 255)
                 imagen = m2.astype(np.uint8)
                 x, y, w, h = box
@@ -126,7 +124,7 @@ class Potato():
                             if categoria:
                                 self.ConexionBD.Incremento("CantidadObservada", self.idPasada)
                                 self.ConexionBD.Incremento(categoria, self.idPasada)
-                                self.ConexionBD.Incremento("PesoTotal", self.idPasada, round(masa, 3))
+                                self.ConexionBD.Incremento("PesoTotal", self.idPasada, round(masa, 4))
 
                                 #self.ConexionBD.Incremento("Total", self.idRendimiento)
                                 #self.ConexionBD.Incremento(categoria, self.idRendimiento)
@@ -159,7 +157,7 @@ class Potato():
                 profundidad = 300
             
             ancho = profundidad * 2
-            pxmm = self.camara1.w / ancho
+            pxmm = self.camara.w / ancho
 
             z_potato = profundidad
             x_potato = w / pxmm
@@ -169,6 +167,6 @@ class Potato():
             print("Error --> getSize: ", e)
     
     def drawBigotes(self, frame, countOffset):
-        cv2.line(frame,(0, self.lim - countOffset), (int(self.camara1.w), self.lim - countOffset),(50, 200, 0), 2)
-        cv2.line(frame,(0, self.lim), (int(self.camara1.w), self.lim),(200, 100, 50), 2)
+        cv2.line(frame,(0, self.lim - countOffset), (int(self.camara.w), self.lim - countOffset),(50, 200, 0), 2)
+        cv2.line(frame,(0, self.lim), (int(self.camara.w), self.lim),(200, 100, 50), 2)
         return frame

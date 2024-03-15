@@ -9,7 +9,7 @@ from .uiDesigns.addParcelaWindow import Ui_addParcelaWindow
 from .uiDesigns.addCosechaWindow import Ui_addCosechaWindow
 from .Scripts.Validation import validate
 from .Scripts.BaseWindowClasses import BaseInsertWindow
-from .Scripts.Coordinates import getCoordinates
+from .GPS.Coordinates import getCoordinates
 from utils.Interface.ObjectDictionaries import ValidationDict
 
 class InsertRanchoWindow(BaseInsertWindow, Ui_addRanchoWindow):

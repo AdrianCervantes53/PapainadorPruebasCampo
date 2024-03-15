@@ -6,7 +6,7 @@ import pyqtgraph as pg
 from time import localtime
 from datetime import datetime
 from icecream import ic
-
+from threading import Thread
 import cv2
 import numpy as np
 
@@ -14,8 +14,10 @@ import socket
 import sys
 import os
 
+from utils.DB.potatoDB import *
+from utils.DB.datosConexionBD import Datos
 from utils.Interface.uiDesigns.Potato_Interface2 import Ui_Papainador
-from utils.PotatoDetector import Potato
+from utils.MultiPotato import MultiPapa
 from utils.Interface.PopupWindows import ConfirmWindow, MessageWindow
 from utils.Interface.InsertDataWindows import InsertRanchoWindow, InsertVariedadWindow, InsertParcelaWindow, InsertCosechaWindow
 from utils.Interface.Scripts.Graph import GraphClass
@@ -25,51 +27,50 @@ from utils.Interface.Scripts.Validation import validate
 
 
 class Papainador(QDialog, Ui_Papainador):
-    #estandares = ['Suprema', 'Primera', 'Segunda', 'Tercera', 'Cuarta']
     idMaquina = 1
-    twoCams = False
 
     def __init__(self):
         super(Papainador, self).__init__()
 
-        #Quitar bordes a la ventana
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.resize(1920, 1080)
         self.setupUi(self)
         
         self.showNormal()
 
-        #Crear objetos para el brillo de la pantalla y la grafica de rendimiento de papas
         self.graphObject = GraphClass(self.graphFrame)
         self.brisho = Brisho()
         self.brisho.updateSlider(self.brightSlider)
 
+        self.ConexionBD = Creacion(Datos)
+
         serialNumbers = ["215122252177", "234322304889"]
-        self.papa = Potato(serialNumbers)
-        #crear ventanas secundarias con su respectivo texto y funciones
+        self.papa1 = MultiPapa(serialNumbers[0], self.ConexionBD)
+        self.papa2 = MultiPapa(serialNumbers[1], self.ConexionBD)
+
+        self.hilo1 = Thread(target= self.papa1.mainPotato)
+        self.hilo2 = Thread(target= self.papa2.mainPotato)
+
         screen = QApplication.primaryScreen()
         self.confirmPowerOff = ConfirmWindow("Apagar", "¿Seguro que quiere Apagar la Computadora?", screen, self.handlePowerOffResult)
         self.confirmReboot = ConfirmWindow("Restart", "¿Seguro que quiere Reiniciar la Computadora?", screen, self.handleRebootResult)
         self.confirmLogout = ConfirmWindow("Cerrar sesión", "¿Seguro que quiere Cerrar sesión?", screen, self.handleDialogResult)
         self.cameraDisconnected = ConfirmWindow("Cámara desconectada", "No se encontro ninguna cámara\n"
                                                 "¿Reintentar conexion?", screen, self.handleDisconnection)
-        self.addNewRancho = InsertRanchoWindow(screen, self.papa.ConexionBD, self.handleRanchoAddition, "Rancho")
-        self.addNewVariedad = InsertVariedadWindow(screen, self.papa.ConexionBD, self.handleVariedadAddition, "Variedad")
-        self.addNewParcela = InsertParcelaWindow(screen, self.papa.ConexionBD, self.handleParcelaAddition, "Parcela")
-        self.addNewCosecha = InsertCosechaWindow(screen, self.papa.ConexionBD, self.handleCosechaAddition, "Cosecha")
+        self.addNewRancho = InsertRanchoWindow(screen, self.ConexionBD, self.handleRanchoAddition, "Rancho")
+        self.addNewVariedad = InsertVariedadWindow(screen, self.ConexionBD, self.handleVariedadAddition, "Variedad")
+        self.addNewParcela = InsertParcelaWindow(screen, self.ConexionBD, self.handleParcelaAddition, "Parcela")
+        self.addNewCosecha = InsertCosechaWindow(screen, self.ConexionBD, self.handleCosechaAddition, "Cosecha")
 
         self.statusMessage = MessageWindow(screen, self.enableScreen)
 
-
-        #Crear timers para la lectura de frames, runtime, grafica y reloj
         fps = 10
         self.ms = int(1000/fps)
         self.timerFrame = QTimer(self)
         self.timerFrame.timeout.connect(self.updateFrame)
         
-        if self.twoCams:
-            self.timerFrame2 = QTimer(self)
-            self.timerFrame2.timeout.connect(self.updateFrame2)
+        self.timerFrame2 = QTimer(self)
+        self.timerFrame2.timeout.connect(self.updateFrame2)
 
         self.timerGraph = QTimer(self)
         self.timerGraph.timeout.connect(self.graphData)
@@ -101,11 +102,11 @@ class Papainador(QDialog, Ui_Papainador):
         userVal, _ = validate.validateData(tuple([self.userEditText, "string"]))
         passwordVal, _ = validate.validateData(tuple([self.passwordEditText, "string"]))
 
-        user = self.papa.ConexionBD.ConsultaLogin(self.userEditText.text(), self.passwordEditText.text()) if userVal and passwordVal else None
+        user = self.ConexionBD.ConsultaLogin(self.userEditText.text(), self.passwordEditText.text()) if userVal and passwordVal else None
         if user is not None:
             self.user = user.NombreUsuario
             self.idUser = user.idUsuario
-            cliente = self.papa.ConexionBD.ConsultaCliente(self.idUser)
+            cliente = self.ConexionBD.ConsultaCliente(self.idUser)
             self.cliente = cliente.NombreCliente
             self.idCliente = cliente.idCliente
             self.userLabel.setText(cliente.NombreCliente) 
@@ -162,7 +163,8 @@ class Papainador(QDialog, Ui_Papainador):
             self.lastFrame.clear()
 
     def logoutWidgetUpdates(self):
-        self.papa.papa_contada.clear()
+        self.papa1.papa_contada.clear()
+        self.papa2.papa_contada.clear()
         self.userEditText.clear()
         self.passwordEditText.clear()
         self.ranchoComboBox.clear()
@@ -214,27 +216,23 @@ class Papainador(QDialog, Ui_Papainador):
 
     #actualizar contador de papas
     def updateContador(self):
-        self.contadorLabel.setText(str(self.papa.contador))
+        self.contadorLabel.setText(str(self.papa1.contador + self.papa2.contador))
             
 
     #  control panel events
     def startVideo(self):
 
-        ret = self.papa.checkConnection()
+        ret = self.papa1.checkConnection()
         if self.status and ret:             #Inicia video si detecta la camara y puede leer frames, sino intenta reconexion
             ic("video started")
 
-            self.papa.ConexionBD.InsertarNuevaPasada(self.idCosecha, datetime.now())
-            self.idPasada = self.papa.ConexionBD.ConsultaUltimaPasada(self.idCosecha)
+            self.ConexionBD.InsertarNuevaPasada(self.idCosecha, datetime.now())
+            self.idPasada = self.ConexionBD.ConsultaUltimaPasada(self.idCosecha)
             self.loadGraphComboBoxData()
 
             cords, latitud, longitud = getCoordinates()
             
-            self.timerFrame.start(self.ms)
-            if self.twoCams:
-                self.timerFrame2.start(self.ms)
 
-            
             self.timerGraph.start(1000)
 
             self.runTime = 0
@@ -245,7 +243,10 @@ class Papainador(QDialog, Ui_Papainador):
             self.startButton.setEnabled(False)
             self.configurationButton.setEnabled(False)
             self.lastFrame.clear()
-            self.papa.idPasada = self.idPasada
+            self.papa1.idPasada = self.idPasada
+            self.papa2.idPasada = self.idPasada
+            self.hilo1.start()
+            self.hilo2.start()
             self.graphData()
             #self.papa.idPrueba = 1
 
@@ -255,6 +256,8 @@ class Papainador(QDialog, Ui_Papainador):
             self.hs = h/480
             self.ws = w/848
             self.ret = True
+            self.timerFrame.start(self.ms)
+            self.timerFrame2.start(self.ms)
             self.updateStatus()
         else:
             self.status = False
@@ -268,11 +271,13 @@ class Papainador(QDialog, Ui_Papainador):
 
     #Para el video junto con todos los timers y resetea el runtime
     def stopVideo(self):
-        self.papa.ConexionBD.FinalizarPasada(self.idPasada, datetime.now())
+        self.ConexionBD.FinalizarPasada(self.idPasada, datetime.now())
         if self.ret:
+            self.run = False
+            self.hilo1.join()
+            self.hilo2.join()
             self.timerFrame.stop()
-            if self.twoCams:
-                self.timerFrame2.stop()
+            self.timerFrame2.stop()
             self.timerGraph.stop()
             self.timerRuntime.stop()
             self.runTime = 0
@@ -294,45 +299,36 @@ class Papainador(QDialog, Ui_Papainador):
 
     #main panel events
     def updateFrame(self):
-        #self.ret, frame = self.papa.mainGUI()
-        self.ret, depthFrame, frame, _ = self.papa.camara1.getFrame()
-        if self.ret and self.status:
+        if self.papa1.ret and self.status:
             
-            results = self.papa.frameInference(frame)
-            frame = self.papa.drawInference(frame, depthFrame, results)
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = cv2.cvtColor(self.papa1.frame, cv2.COLOR_BGR2RGB)
             
-            self.frame = cv2.resize(frame, (int(frame.shape[1] * self.hs) - 12, int(frame.shape[0] * self.ws) + 12)) 
-            height, width, _ = self.frame.shape
+            frame = cv2.resize(frame, (int(frame.shape[1] * self.hs) - 12, int(frame.shape[0] * self.ws) + 12)) 
+            height, width, _ = frame.shape
             
             bytesPerLine = 3 * width
-            qImg = QImage(self.frame.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
+            qImg = QImage(frame.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
             self.mainFrame.setPixmap(QPixmap.fromImage(qImg))
             self.updateContador()
         else:
             self.status = False
             self.stopVideo()
-            #self.updateStatus()
     
     def updateFrame2(self):
-        #self.ret, frame = self.papa.mainGUI()
-        self.ret, depthFrame, frame, _ = self.papa.camara2.getFrame()
-        if self.ret and self.status:
-            results = self.papa.frameInference2(frame)
-            frame = self.papa.drawInference(frame, depthFrame, results)
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        if self.papa1.ret and self.status:
             
-            self.frame1 = cv2.resize(frame, (int(frame.shape[1] * self.hs) - 12, int(frame.shape[0] * self.ws) + 12)) 
-            height, width, _ = self.frame1.shape
+            frame = cv2.cvtColor(self.papa2.frame, cv2.COLOR_BGR2RGB)
+            
+            frame = cv2.resize(frame, (int(frame.shape[1] * self.hs) - 12, int(frame.shape[0] * self.ws) + 12)) 
+            height, width, _ = frame.shape
             
             bytesPerLine = 3 * width
-            qImg = QImage(self.frame1.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
-            self.lastFrame.setPixmap(QPixmap.fromImage(qImg))
+            qImg = QImage(frame.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
+            self.mapFrame.setPixmap(QPixmap.fromImage(qImg))
             self.updateContador()
         else:
             self.status = False
             self.stopVideo()
-            #self.updateStatus()
 
     def lastFrameView(self):
         self.updateButtonIndex(0)
@@ -345,7 +341,7 @@ class Papainador(QDialog, Ui_Papainador):
 
     def loadGraphComboBoxData(self):
         self.idpruebaComboBox.clear()
-        self.pruebas = self.papa.ConexionBD.ConsultaPasada(self.idCosecha)
+        self.pruebas = self.ConexionBD.ConsultaPasada(self.idCosecha)
         for prueba in self.pruebas:
             self.idpruebaComboBox.addItem(f"ID: {prueba.idPasada}")
         self.idpruebaComboBox.setCurrentIndex(self.idpruebaComboBox.count() - 1)
@@ -357,7 +353,7 @@ class Papainador(QDialog, Ui_Papainador):
         self.graphData()
 
     def graphData(self):
-        data = self.papa.ConexionBD.ConsultaDatosPasada(self.idPasada)
+        data = self.ConexionBD.ConsultaDatosPasada(self.idPasada)
         self.graphObject.graph(data)
         self.totalPapasLabel.setText(str(data.CantidadObservada))
 
@@ -402,8 +398,10 @@ class Papainador(QDialog, Ui_Papainador):
     def tryCamConnection(self):
         msgFlag = self.status
         if not self.status:
-            self.papa.cameraCreation()
-            self.status = self.papa.camara1.status
+            #self.papa1.cameraCreation()
+            #self.papa
+            self.status = self.papa1.camara.status
+            #self.status2 = self.papa1.camara.status
         self.updateStatus()
         if msgFlag != self.status:
             #self.setEnabled(False)
@@ -431,7 +429,7 @@ class Papainador(QDialog, Ui_Papainador):
 
     ######################## Data Page events ########################
     def loadDefaultData(self):
-        data = self.papa.ConexionBD.ConsultaDefaultData(self.idCliente)
+        data = self.ConexionBD.ConsultaDefaultData(self.idCliente)
         if data is None:
             self.defaultDataFlag = False
             self.defaultDataButton.setEnabled(False)
@@ -461,9 +459,9 @@ class Papainador(QDialog, Ui_Papainador):
                 "idCosecha": self.idCosecha
             }
             if self.defaultDataFlag:
-                self.papa.ConexionBD.UpdateDefaultdata(self.idCliente, data)
+                self.ConexionBD.UpdateDefaultdata(self.idCliente, data)
             else:
-                self.papa.ConexionBD.InsertarDefaultData(self.idCliente, data)
+                self.ConexionBD.InsertarDefaultData(self.idCliente, data)
             self.loadDefaultData()
         else:
             ic("mostrar ventana, no actual data")
@@ -512,7 +510,7 @@ class Papainador(QDialog, Ui_Papainador):
         self.addParcelaButton.setEnabled(False)
         self.addCosechaButton.setEnabled(False)
 
-        self.ranchos = self.papa.ConexionBD.ConsultaRancho(self.idCliente)
+        self.ranchos = self.ConexionBD.ConsultaRancho(self.idCliente)
         for rancho in self.ranchos:
             self.ranchoComboBox.addItem(f"{rancho.NombreRancho}, {rancho.Localidad}")
 
@@ -532,7 +530,7 @@ class Papainador(QDialog, Ui_Papainador):
         self.addParcelaButton.setEnabled(False)
         self.addCosechaButton.setEnabled(False)
         
-        self.variedades = self.papa.ConexionBD.ConsultaVariedad()
+        self.variedades = self.ConexionBD.ConsultaVariedad()
         for variedad in self.variedades:
             self.variedadComboBox.addItem(f"{variedad.Nombre}")
 
@@ -550,7 +548,7 @@ class Papainador(QDialog, Ui_Papainador):
         self.variedad = self.variedades[idx].Nombre
         self.idVariedad = self.variedades[idx].idVariedad
 
-        self.parcelas = self.papa.ConexionBD.ConsultaParcela(self.idRancho, self.idVariedad)
+        self.parcelas = self.ConexionBD.ConsultaParcela(self.idRancho, self.idVariedad)
         for parcela in self.parcelas:
             self.parcelaComboBox.addItem(f"{parcela.NombreParcela}")
 
@@ -566,7 +564,7 @@ class Papainador(QDialog, Ui_Papainador):
         self.parcela = self.parcelas[idx].NombreParcela
         self.idParcela = self.parcelas[idx].idParcela
 
-        self.cosechas = self.papa.ConexionBD.ConsultaCosecha(self.idRancho, self.idParcela, self.idMaquina)
+        self.cosechas = self.ConexionBD.ConsultaCosecha(self.idRancho, self.idParcela, self.idMaquina)
         for cosecha in self.cosechas:
             self.cosechaComboBox.addItem(f"{cosecha.idCosecha}")
 
