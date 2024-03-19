@@ -38,7 +38,7 @@ class Ui_Papainador(object):
 "background-color: rgb(0, 170, 0);\n"
 "background-color: rgb(46, 47, 58);\n"
 "border-bottom-right-radius: 35px;\n"
-"border-top-right-radius: 18px;")
+"border-top-right-radius: 30px;")
         self.dataPanel.setTitle("")
         self.dataPanel.setObjectName("dataPanel")
         self.dataPanelLayout = QtWidgets.QGridLayout(self.dataPanel)
@@ -98,7 +98,7 @@ class Ui_Papainador(object):
 "}\n"
 "\n"
 "QGroupBox:Disabled{\n"
-"    border-top-right-radius: 18px;\n"
+"    border-top-right-radius: 30px;\n"
 "    \n"
 "    color: rgb(255, 255, 255);\n"
 "    background-color:rgb(200, 200, 200)\n"
@@ -112,7 +112,7 @@ class Ui_Papainador(object):
         self.contadorGroupBox = QtWidgets.QGroupBox(parent=self.dataGroupBox)
         self.contadorGroupBox.setStyleSheet("QWidget{\n"
 "    background-color: rgb(0, 0, 0);\n"
-"    border-bottom-left-radius: 18px;\n"
+"    border-bottom-left-radius: 30px;\n"
 "}\n"
 "QWidget:disabled {\n"
 "    background-color: rgb(93, 93, 93);\n"
@@ -471,13 +471,109 @@ class Ui_Papainador(object):
         self.gridLayout_9.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_9.setSpacing(0)
         self.gridLayout_9.setObjectName("gridLayout_9")
-        self.mainFrame = QtWidgets.QLabel(parent=self.videoPage)
-        self.mainFrame.setStyleSheet("border: none;\n"
-"background-color: rgb(0, 0, 0);")
-        self.mainFrame.setText("")
-        self.mainFrame.setScaledContents(False)
-        self.mainFrame.setObjectName("mainFrame")
-        self.gridLayout_9.addWidget(self.mainFrame, 1, 0, 1, 1)
+        self.cameraNumberLabel = QtWidgets.QLabel(parent=self.videoPage)
+        font = QtGui.QFont()
+        font.setFamily("Ubuntu")
+        font.setPointSize(40)
+        font.setBold(True)
+        self.cameraNumberLabel.setFont(font)
+        self.cameraNumberLabel.setStyleSheet("border-left: 2px solid;\n"
+"border-right: 2px solid;\n"
+"border-radius: 0;\n"
+"\n"
+"border-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0.9, stop:0 rgba(186, 186, 186, 255), stop:0.99435 rgba(116, 116, 116, 255));\n"
+"border-color: rgb(116, 116, 116);")
+        self.cameraNumberLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.cameraNumberLabel.setObjectName("cameraNumberLabel")
+        self.gridLayout_9.addWidget(self.cameraNumberLabel, 2, 1, 1, 1)
+        self.rightButton = QtWidgets.QPushButton(parent=self.videoPage)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.rightButton.sizePolicy().hasHeightForWidth())
+        self.rightButton.setSizePolicy(sizePolicy)
+        self.rightButton.setStyleSheet("QPushButton{\n"
+"    background-color: rgba(186, 186, 186, 186);\n"
+"border-radius:0;\n"
+"border-bottom-right-radius: 10px;\n"
+"\n"
+"}\n"
+"QPushButton:hover{\n"
+"    background-color: rgb(116, 116, 116);\n"
+"    icon: url(Recursos/Icons/rightArrowW.svg);\n"
+"}\n"
+"")
+        self.rightButton.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap("Recursos/Icons/rightArrowB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.rightButton.setIcon(icon1)
+        self.rightButton.setIconSize(QtCore.QSize(70, 70))
+        self.rightButton.setObjectName("rightButton")
+        self.gridLayout_9.addWidget(self.rightButton, 2, 2, 1, 1)
+        self.leftButton = QtWidgets.QPushButton(parent=self.videoPage)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.leftButton.sizePolicy().hasHeightForWidth())
+        self.leftButton.setSizePolicy(sizePolicy)
+        self.leftButton.setStyleSheet("QPushButton{\n"
+"    background-color: rgba(186, 186, 186, 186);\n"
+"border-radius:0;\n"
+"border-bottom-left-radius: 10px;\n"
+"}\n"
+"QPushButton:hover{\n"
+"    background-color: rgb(116, 116, 116);\n"
+"icon:url(Recursos/Icons/leftArrowW.svg)\n"
+"}\n"
+"\n"
+"")
+        self.leftButton.setText("")
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap("Recursos/Icons/leftArrowB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.leftButton.setIcon(icon2)
+        self.leftButton.setIconSize(QtCore.QSize(70, 70))
+        self.leftButton.setObjectName("leftButton")
+        self.gridLayout_9.addWidget(self.leftButton, 2, 0, 1, 1)
+        self.cameraStackedWidget = QtWidgets.QStackedWidget(parent=self.videoPage)
+        self.cameraStackedWidget.setObjectName("cameraStackedWidget")
+        self.camera1Page = QtWidgets.QWidget()
+        self.camera1Page.setObjectName("camera1Page")
+        self.gridLayout_32 = QtWidgets.QGridLayout(self.camera1Page)
+        self.gridLayout_32.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_32.setSpacing(0)
+        self.gridLayout_32.setObjectName("gridLayout_32")
+        self.mainFrame1 = QtWidgets.QLabel(parent=self.camera1Page)
+        self.mainFrame1.setStyleSheet("border: none;\n"
+"background-color: rgb(0, 0, 0);\n"
+"border-bottom-left-radius: 0;\n"
+"border-bottom-right-radius: 0;")
+        self.mainFrame1.setText("")
+        self.mainFrame1.setScaledContents(False)
+        self.mainFrame1.setObjectName("mainFrame1")
+        self.gridLayout_32.addWidget(self.mainFrame1, 0, 0, 1, 1)
+        self.cameraStackedWidget.addWidget(self.camera1Page)
+        self.camera2Page = QtWidgets.QWidget()
+        self.camera2Page.setObjectName("camera2Page")
+        self.gridLayout_33 = QtWidgets.QGridLayout(self.camera2Page)
+        self.gridLayout_33.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_33.setSpacing(0)
+        self.gridLayout_33.setObjectName("gridLayout_33")
+        self.mainFrame2 = QtWidgets.QLabel(parent=self.camera2Page)
+        self.mainFrame2.setStyleSheet("border: none;\n"
+"background-color: rgb(0, 0, 0);\n"
+"border-bottom-left-radius: 0;\n"
+"border-bottom-right-radius: 0;")
+        self.mainFrame2.setText("")
+        self.mainFrame2.setObjectName("mainFrame2")
+        self.gridLayout_33.addWidget(self.mainFrame2, 0, 0, 1, 1)
+        self.cameraStackedWidget.addWidget(self.camera2Page)
+        self.gridLayout_9.addWidget(self.cameraStackedWidget, 0, 0, 2, 3)
+        self.gridLayout_9.setColumnStretch(0, 10)
+        self.gridLayout_9.setColumnStretch(1, 80)
+        self.gridLayout_9.setColumnStretch(2, 10)
+        self.gridLayout_9.setRowStretch(0, 10)
+        self.gridLayout_9.setRowStretch(1, 80)
+        self.gridLayout_9.setRowStretch(2, 10)
         self.showStackedWidget.addWidget(self.videoPage)
         self.graphPage = QtWidgets.QWidget()
         self.graphPage.setStyleSheet("border-bottom-right-radius: 10px;\n"
@@ -576,8 +672,8 @@ class Ui_Papainador(object):
         self.frameButton.setStyleSheet("QPushButton {\n"
 "    background-color:rgb(90, 90, 90) ;\n"
 "    border: none ; \n"
-"    border-top-right-radius: 10px;\n"
-"    border-top-left-radius: 10px;\n"
+"    border-top-right-radius: 30px;\n"
+"    border-top-left-radius: 30px;\n"
 "    border-bottom-right-radius: 0px;\n"
 "    border-bottom-left-radius: 0px;\n"
 "}\n"
@@ -596,10 +692,10 @@ class Ui_Papainador(object):
 "    color: rgb(0, 0, 0);\n"
 "}\n"
 "")
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("Recursos/Icons/captureB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        icon1.addPixmap(QtGui.QPixmap("Recursos/Icons/captureB.svg"), QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.Off)
-        self.frameButton.setIcon(icon1)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap("Recursos/Icons/captureB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon3.addPixmap(QtGui.QPixmap("Recursos/Icons/captureB.svg"), QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.Off)
+        self.frameButton.setIcon(icon3)
         self.frameButton.setIconSize(QtCore.QSize(40, 40))
         self.frameButton.setCheckable(False)
         self.frameButton.setFlat(True)
@@ -622,8 +718,8 @@ class Ui_Papainador(object):
         self.videoButton.setStyleSheet("QPushButton {\n"
 "    background-color:rgb(90, 90, 90) ;\n"
 "    border: none ; \n"
-"    border-top-right-radius: 10px;\n"
-"    border-top-left-radius: 10px;\n"
+"    border-top-right-radius: 30px;\n"
+"    border-top-left-radius: 30px;\n"
 "    border-bottom-right-radius: 0px;\n"
 "    border-bottom-left-radius: 0px;\n"
 "}\n"
@@ -634,17 +730,17 @@ class Ui_Papainador(object):
 "QPushButton:Disabled{\n"
 "    background-color:rgb(216,216,216) ;\n"
 "    border: none ; \n"
-"    border-top-right-radius: 10px;\n"
-"    border-top-left-radius: 10px;\n"
+"    border-top-right-radius: 30px;\n"
+"    border-top-left-radius: 30px;\n"
 "    border-bottom-right-radius: 0px;\n"
 "    border-bottom-left-radius: 0px;\n"
 "    \n"
 "    color: rgb(0, 0, 0);\n"
 "}")
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("Recursos/Icons/videoB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        icon2.addPixmap(QtGui.QPixmap("Recursos/Icons/videoB.svg"), QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.Off)
-        self.videoButton.setIcon(icon2)
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap("Recursos/Icons/videoB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon4.addPixmap(QtGui.QPixmap("Recursos/Icons/videoB.svg"), QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.Off)
+        self.videoButton.setIcon(icon4)
         self.videoButton.setIconSize(QtCore.QSize(45, 45))
         self.videoButton.setCheckable(False)
         self.videoButton.setFlat(True)
@@ -667,8 +763,8 @@ class Ui_Papainador(object):
         self.graphButton.setStyleSheet("QPushButton {\n"
 "    background-color:rgb(90, 90, 90) ;\n"
 "    border: none ; \n"
-"    border-top-right-radius: 10px;\n"
-"    border-top-left-radius: 10px;\n"
+"    border-top-right-radius: 30px;\n"
+"    border-top-left-radius: 30px;\n"
 "    border-bottom-right-radius: 0px;\n"
 "    border-bottom-left-radius: 0px;\n"
 "}\n"
@@ -686,10 +782,10 @@ class Ui_Papainador(object):
 "    \n"
 "    color: rgb(0, 0, 0);\n"
 "}")
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("Recursos/Icons/graphB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        icon3.addPixmap(QtGui.QPixmap("Recursos/Icons/graphB.svg"), QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.Off)
-        self.graphButton.setIcon(icon3)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap("Recursos/Icons/graphB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon5.addPixmap(QtGui.QPixmap("Recursos/Icons/graphB.svg"), QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.Off)
+        self.graphButton.setIcon(icon5)
         self.graphButton.setIconSize(QtCore.QSize(40, 40))
         self.graphButton.setCheckable(False)
         self.graphButton.setFlat(True)
@@ -711,8 +807,8 @@ class Ui_Papainador(object):
         self.mapButton.setStyleSheet("QPushButton {\n"
 "    background-color:rgb(90, 90, 90) ;\n"
 "border: none ; \n"
-"    border-top-right-radius: 10px;\n"
-"    border-top-left-radius: 10px;\n"
+"    border-top-right-radius: 30px;\n"
+"    border-top-left-radius: 30px;\n"
 "    border-bottom-right-radius: 0px;\n"
 "    border-bottom-left-radius: 0px;\n"
 "}\n"
@@ -731,10 +827,10 @@ class Ui_Papainador(object):
 "    \n"
 "    color: rgb(0, 0, 0);\n"
 "}")
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("Recursos/Icons/mapB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        icon4.addPixmap(QtGui.QPixmap("Recursos/Icons/mapB.svg"), QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.Off)
-        self.mapButton.setIcon(icon4)
+        icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap("Recursos/Icons/mapB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon6.addPixmap(QtGui.QPixmap("Recursos/Icons/mapB.svg"), QtGui.QIcon.Mode.Disabled, QtGui.QIcon.State.Off)
+        self.mapButton.setIcon(icon6)
         self.mapButton.setIconSize(QtCore.QSize(40, 40))
         self.mapButton.setCheckable(False)
         self.mapButton.setFlat(True)
@@ -869,9 +965,9 @@ class Ui_Papainador(object):
 "border-color: rgba(20, 87, 105, 255);\n"
 "background-color: rgb(16, 70, 84);\n"
 "}")
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("Recursos/Icons/calibrationB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.calibrationButton.setIcon(icon5)
+        icon7 = QtGui.QIcon()
+        icon7.addPixmap(QtGui.QPixmap("Recursos/Icons/calibrationB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.calibrationButton.setIcon(icon7)
         self.calibrationButton.setIconSize(QtCore.QSize(55, 55))
         self.calibrationButton.setCheckable(False)
         self.calibrationButton.setFlat(True)
@@ -920,9 +1016,9 @@ class Ui_Papainador(object):
 "border-color: rgba(20, 87, 105, 255);\n"
 "background-color: rgb(16, 70, 84);\n"
 "}")
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("Recursos/Icons/adminConfB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.adminButton.setIcon(icon6)
+        icon8 = QtGui.QIcon()
+        icon8.addPixmap(QtGui.QPixmap("Recursos/Icons/adminConfB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.adminButton.setIcon(icon8)
         self.adminButton.setIconSize(QtCore.QSize(55, 55))
         self.adminButton.setCheckable(False)
         self.adminButton.setFlat(True)
@@ -968,9 +1064,9 @@ class Ui_Papainador(object):
 "border-color: rgba(20, 87, 105, 255);\n"
 "\n"
 "}")
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap("Recursos/Icons/systemConfB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.systemButton.setIcon(icon7)
+        icon9 = QtGui.QIcon()
+        icon9.addPixmap(QtGui.QPixmap("Recursos/Icons/systemConfB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.systemButton.setIcon(icon9)
         self.systemButton.setIconSize(QtCore.QSize(55, 55))
         self.systemButton.setCheckable(False)
         self.systemButton.setFlat(True)
@@ -1016,9 +1112,9 @@ class Ui_Papainador(object):
 "background-color: rgb(16, 70, 84);\n"
 "}\n"
 "")
-        icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap("Recursos/Icons/contactB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.contactButton.setIcon(icon8)
+        icon10 = QtGui.QIcon()
+        icon10.addPixmap(QtGui.QPixmap("Recursos/Icons/contactB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.contactButton.setIcon(icon10)
         self.contactButton.setIconSize(QtCore.QSize(55, 55))
         self.contactButton.setCheckable(False)
         self.contactButton.setFlat(True)
@@ -1229,9 +1325,9 @@ class Ui_Papainador(object):
 "    background-color: rgb(72, 72, 72);\n"
 "icon: url(Recursos/Icons/gpsW.svg)\n"
 "}")
-        icon9 = QtGui.QIcon()
-        icon9.addPixmap(QtGui.QPixmap("Recursos/Icons/gpsB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.connectGpsButton.setIcon(icon9)
+        icon11 = QtGui.QIcon()
+        icon11.addPixmap(QtGui.QPixmap("Recursos/Icons/gpsB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.connectGpsButton.setIcon(icon11)
         self.connectGpsButton.setIconSize(QtCore.QSize(45, 45))
         self.connectGpsButton.setObjectName("connectGpsButton")
         self.gridLayout_12.addWidget(self.connectGpsButton, 3, 3, 1, 1)
@@ -1267,9 +1363,9 @@ class Ui_Papainador(object):
 "    background-color: rgb(72, 72, 72);\n"
 "icon: url(Recursos/Icons/wifiW.svg)\n"
 "}")
-        icon10 = QtGui.QIcon()
-        icon10.addPixmap(QtGui.QPixmap("Recursos/Icons/wifiB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.connectWifiButton.setIcon(icon10)
+        icon12 = QtGui.QIcon()
+        icon12.addPixmap(QtGui.QPixmap("Recursos/Icons/wifiB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.connectWifiButton.setIcon(icon12)
         self.connectWifiButton.setIconSize(QtCore.QSize(45, 45))
         self.connectWifiButton.setObjectName("connectWifiButton")
         self.gridLayout_12.addWidget(self.connectWifiButton, 5, 3, 1, 1)
@@ -1308,9 +1404,9 @@ class Ui_Papainador(object):
 "icon: url(Recursos/Icons/camW.svg)\n"
 "}\n"
 "")
-        icon11 = QtGui.QIcon()
-        icon11.addPixmap(QtGui.QPixmap("Recursos/Icons/camB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.connectCamButton.setIcon(icon11)
+        icon13 = QtGui.QIcon()
+        icon13.addPixmap(QtGui.QPixmap("Recursos/Icons/camB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.connectCamButton.setIcon(icon13)
         self.connectCamButton.setIconSize(QtCore.QSize(45, 45))
         self.connectCamButton.setAutoExclusive(False)
         self.connectCamButton.setObjectName("connectCamButton")
@@ -1451,9 +1547,9 @@ class Ui_Papainador(object):
 "    icon: url(Recursos/Icons/returnW.svg);\n"
 "}")
         self.returnButton.setText("")
-        icon12 = QtGui.QIcon()
-        icon12.addPixmap(QtGui.QPixmap("Recursos/Icons/returnB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.returnButton.setIcon(icon12)
+        icon14 = QtGui.QIcon()
+        icon14.addPixmap(QtGui.QPixmap("Recursos/Icons/returnB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.returnButton.setIcon(icon14)
         self.returnButton.setIconSize(QtCore.QSize(70, 70))
         self.returnButton.setCheckable(False)
         self.returnButton.setDefault(False)
@@ -1578,9 +1674,9 @@ class Ui_Papainador(object):
 "    icon: url(Recursos/Icons/homeB.svg);\n"
 "}")
         self.homeButton.setText("")
-        icon13 = QtGui.QIcon()
-        icon13.addPixmap(QtGui.QPixmap("Recursos/Icons/homeW.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.homeButton.setIcon(icon13)
+        icon15 = QtGui.QIcon()
+        icon15.addPixmap(QtGui.QPixmap("Recursos/Icons/homeW.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.homeButton.setIcon(icon15)
         self.homeButton.setIconSize(QtCore.QSize(60, 60))
         self.homeButton.setCheckable(False)
         self.homeButton.setDefault(False)
@@ -2098,9 +2194,9 @@ class Ui_Papainador(object):
 "background-color:rgb(26, 112, 134);\n"
 "color: rgb(255, 255, 255);}")
         self.addRanchoButton.setText("")
-        icon14 = QtGui.QIcon()
-        icon14.addPixmap(QtGui.QPixmap("Recursos/Icons/addB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.addRanchoButton.setIcon(icon14)
+        icon16 = QtGui.QIcon()
+        icon16.addPixmap(QtGui.QPixmap("Recursos/Icons/addB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.addRanchoButton.setIcon(icon16)
         self.addRanchoButton.setIconSize(QtCore.QSize(28, 30))
         self.addRanchoButton.setObjectName("addRanchoButton")
         self.gridLayout_19.addWidget(self.addRanchoButton, 1, 5, 1, 1)
@@ -2128,7 +2224,7 @@ class Ui_Papainador(object):
 "background-color:rgb(26, 112, 134);\n"
 "color: rgb(255, 255, 255);}")
         self.addParcelaButton.setText("")
-        self.addParcelaButton.setIcon(icon14)
+        self.addParcelaButton.setIcon(icon16)
         self.addParcelaButton.setIconSize(QtCore.QSize(28, 30))
         self.addParcelaButton.setObjectName("addParcelaButton")
         self.gridLayout_19.addWidget(self.addParcelaButton, 5, 5, 1, 1)
@@ -2302,7 +2398,7 @@ class Ui_Papainador(object):
 "background-color:rgb(26, 112, 134);\n"
 "color: rgb(255, 255, 255);}")
         self.addVariedadButton.setText("")
-        self.addVariedadButton.setIcon(icon14)
+        self.addVariedadButton.setIcon(icon16)
         self.addVariedadButton.setIconSize(QtCore.QSize(28, 30))
         self.addVariedadButton.setObjectName("addVariedadButton")
         self.gridLayout_19.addWidget(self.addVariedadButton, 3, 5, 1, 1)
@@ -2357,7 +2453,7 @@ class Ui_Papainador(object):
 "background-color:rgb(26, 112, 134);\n"
 "color: rgb(255, 255, 255);}")
         self.addCosechaButton.setText("")
-        self.addCosechaButton.setIcon(icon14)
+        self.addCosechaButton.setIcon(icon16)
         self.addCosechaButton.setIconSize(QtCore.QSize(28, 30))
         self.addCosechaButton.setObjectName("addCosechaButton")
         self.gridLayout_19.addWidget(self.addCosechaButton, 8, 5, 1, 1)
@@ -2540,7 +2636,7 @@ class Ui_Papainador(object):
 "    icon: url(Recursos/Icons/homeB.svg);\n"
 "}")
         self.homeButton2.setText("")
-        self.homeButton2.setIcon(icon13)
+        self.homeButton2.setIcon(icon15)
         self.homeButton2.setIconSize(QtCore.QSize(60, 60))
         self.homeButton2.setCheckable(False)
         self.homeButton2.setDefault(False)
@@ -2981,8 +3077,8 @@ class Ui_Papainador(object):
         self.startButton.setStyleSheet("QPushButton {\n"
 "    background-color: rgb(216, 216, 216);\n"
 "    border: none ; \n"
-"    border-top-right-radius: 25px;\n"
-"    border-bottom-right-radius: 25px;\n"
+"    border-top-right-radius: 30px;\n"
+"    border-bottom-right-radius: 30px;\n"
 "}\n"
 "\n"
 "QPushButton:hover {\n"
@@ -2991,9 +3087,9 @@ class Ui_Papainador(object):
 "    background-color: rgb(76, 165, 34);\n"
 "color: rgb(255, 255, 255);}\n"
 "")
-        icon15 = QtGui.QIcon()
-        icon15.addPixmap(QtGui.QPixmap("Recursos/Icons/playB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.startButton.setIcon(icon15)
+        icon17 = QtGui.QIcon()
+        icon17.addPixmap(QtGui.QPixmap("Recursos/Icons/playB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.startButton.setIcon(icon17)
         self.startButton.setIconSize(QtCore.QSize(45, 45))
         self.startButton.setCheckable(False)
         self.startButton.setAutoDefault(True)
@@ -3015,8 +3111,8 @@ class Ui_Papainador(object):
         self.stopButton.setStyleSheet("QPushButton {\n"
 "background-color: rgb(216, 216, 216);\n"
 "    border: none ; \n"
-"    border-top-right-radius: 25px;\n"
-"    border-bottom-right-radius: 25px;\n"
+"    border-top-right-radius: 30px;\n"
+"    border-bottom-right-radius: 30px;\n"
 "}\n"
 "\n"
 "QPushButton:hover {\n"
@@ -3025,9 +3121,9 @@ class Ui_Papainador(object):
 "color: rgb(255, 255, 255);\n"
 "}\n"
 "")
-        icon16 = QtGui.QIcon()
-        icon16.addPixmap(QtGui.QPixmap("Recursos/Icons/stopB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.stopButton.setIcon(icon16)
+        icon18 = QtGui.QIcon()
+        icon18.addPixmap(QtGui.QPixmap("Recursos/Icons/stopB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.stopButton.setIcon(icon18)
         self.stopButton.setIconSize(QtCore.QSize(45, 45))
         self.stopButton.setObjectName("stopButton")
         self.controlLayout.addWidget(self.stopButton)
@@ -3046,17 +3142,17 @@ class Ui_Papainador(object):
         self.settingButton.setStyleSheet("QPushButton {\n"
 "background-color: rgb(216, 216, 216);\n"
 "    border: none ; \n"
-"    border-top-right-radius: 25px;\n"
-"    border-bottom-right-radius: 25px;\n"
+"    border-top-right-radius: 30px;\n"
+"    border-bottom-right-radius: 30px;\n"
 "}\n"
 "\n"
 "QPushButton:hover {\n"
 "icon:url(Recursos/Icons/settingsW.svg);\n"
 "background-color:rgba(20, 87, 105, 255);\n"
 "color: rgb(255, 255, 255);}")
-        icon17 = QtGui.QIcon()
-        icon17.addPixmap(QtGui.QPixmap("Recursos/Icons/settingsB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.settingButton.setIcon(icon17)
+        icon19 = QtGui.QIcon()
+        icon19.addPixmap(QtGui.QPixmap("Recursos/Icons/settingsB.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.settingButton.setIcon(icon19)
         self.settingButton.setIconSize(QtCore.QSize(50, 50))
         self.settingButton.setObjectName("settingButton")
         self.controlLayout.addWidget(self.settingButton)
@@ -3312,9 +3408,9 @@ class Ui_Papainador(object):
 "    background-color: rgb(164, 33, 33);\n"
 "}")
         self.powerOffButton.setText("")
-        icon18 = QtGui.QIcon()
-        icon18.addPixmap(QtGui.QPixmap("Recursos/Icons/powerOff.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.powerOffButton.setIcon(icon18)
+        icon20 = QtGui.QIcon()
+        icon20.addPixmap(QtGui.QPixmap("Recursos/Icons/powerOff.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.powerOffButton.setIcon(icon20)
         self.powerOffButton.setIconSize(QtCore.QSize(60, 60))
         self.powerOffButton.setObjectName("powerOffButton")
         self.gridLayout_20.addWidget(self.powerOffButton, 0, 2, 1, 1)
@@ -3364,8 +3460,8 @@ class Ui_Papainador(object):
         self.windowLayout.setRowStretch(3, 50)
 
         self.retranslateUi(Papainador)
-        self.mainStackedWidget.setCurrentIndex(2)
-        self.showStackedWidget.setCurrentIndex(2)
+        self.mainStackedWidget.setCurrentIndex(0)
+        self.showStackedWidget.setCurrentIndex(1)
         self.settingsStackedWidget.setCurrentIndex(0)
         self.dataStackedWidget.setCurrentIndex(0)
         self.cosechaComboBox.setCurrentIndex(-1)
@@ -3405,6 +3501,8 @@ class Ui_Papainador(object):
         self.addParcelaButton.clicked.connect(Papainador.addParcela) # type: ignore
         self.addCosechaButton.clicked.connect(Papainador.addCosecha) # type: ignore
         self.changeDefaultDataButton.clicked.connect(Papainador.saveDefaultData) # type: ignore
+        self.leftButton.clicked.connect(Papainador.nextCameraView) # type: ignore
+        self.rightButton.clicked.connect(Papainador.nextCameraView) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Papainador)
         Papainador.setTabOrder(self.userEditText, self.passwordEditText)
         Papainador.setTabOrder(self.passwordEditText, self.loginButton)
@@ -3447,6 +3545,7 @@ class Ui_Papainador(object):
         self.parcelaLabel.setText(_translate("Papainador", "None"))
         self.ranchoStaticLabel.setText(_translate("Papainador", "Rancho:"))
         self.cosechaLabel.setText(_translate("Papainador", "None"))
+        self.cameraNumberLabel.setText(_translate("Papainador", "Camara 1"))
         self.totalPapasStaticLabel.setText(_translate("Papainador", "Total de papas: "))
         self.idpruebaComboBox.setPlaceholderText(_translate("Papainador", "Seleccionar No. de Pasada"))
         self.frameButton.setText(_translate("Papainador", " Captura"))

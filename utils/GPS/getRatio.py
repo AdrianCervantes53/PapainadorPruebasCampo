@@ -11,5 +11,4 @@ def metersPerDegree(Latitude: float) -> float:
     return ratio
 
 if __name__ == "__main__":
-    for i in range(20, 30):
-        ic(metersPerDegree(i))
+    ic(metersPerDegree(21.0893665))

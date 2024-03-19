@@ -449,14 +449,12 @@ class Creacion:
                 rel = update(Pasada).where(Pasada.idPasada == idE).values({Elemento: R + valor})
                 self.session.execute(rel)
                 self.session.commit()
-                #  R=self.session.query(getattr(Prueba,Elemento)).filter(Prueba.idObservacion==idE).scalar()
-                #  print(R)
                 return True
             else:
                 ic("nones")
                 return False
         except Exception as e:
-            print("Error -> Incremento: ", e)
+            ic("Error -> Incremento: ", e)
             return False
     
     

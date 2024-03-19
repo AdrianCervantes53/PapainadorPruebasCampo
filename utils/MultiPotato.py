@@ -4,8 +4,10 @@ import torch
 import cv2
 from icecream import ic
 import time
+from PyQt6.QtCore import QTimer, QThread, pyqtSignal
 
 import math
+import queue
 
 #from utils.Camera.Camera import IRS
 from utils.DB.potatoDB import *
@@ -13,25 +15,26 @@ from utils.DB.datosConexionBD import Datos
 from utils.Camera.realsense_depth_filter import *
 from utils.Interface.Scripts.MassEstimation import calculateMass, calculateVolume
 
-class MultiPapa():
+class Potato(QThread):
+    frame_ready = pyqtSignal(int, object, list, float)
     calibres = {"Suprema": 140, "Primera": 110, "Segunda": 80, "Tercera": 60, "Cuarta": 40}
                 #                    220+    ,   185-220    ,    150-185   ,     120-150
 
-    def __init__(self, serialNumber, DataBase):
-        self.serialNumber = serialNumber
-
-        self.ConexionBD = DataBase
+    def __init__(self, serialNumber, model, id):
+        super().__init__()
+        self.queue = queue.Queue()
+        self.modelo = model
+        self.id = id
+        self.cameraCreation(serialNumber)
         
+        self.stopFlag = False
         self.setParameters()
         self.papa_contada = []
         self.contador = 0
-        self.cameraCreation()
-        self.ret = False
     
-    def cameraCreation(self):
-        self.camara = DepthCamera(self.serialNumber)
-
-    
+    def cameraCreation(self, serialNumber: str):
+        self.camara = DepthCamera(serialNumber)
+        
     def checkConnection(self):
         ret, _, _, _ = self.camara.getFrame()
         ret, _, _, _ = self.camara.getFrame()
@@ -47,31 +50,43 @@ class MultiPapa():
                 return categoria
         return None
     
-    def frameInference(self, frame, sectionLim=300):
-        self.tiempoFrame = time.time()
+    def run(self):
+        while not self.stopFlag:
+            tiempoFrame = time.time()
+            ret, depthFrame, frame, _ = self.camara.getFrame()
+            if not ret:
+                continue
+            #results = self.modelo.track(frame, persist=True, verbose=False)
+            results = self.frameInference(frame)
+            res_plotted, categorias, peso = self.drawInference(frame, depthFrame, results)
+            #res_plotted = results[0].plot()
+
+            fps = int(1 / (time.time() - tiempoFrame))
+            cv2.putText(res_plotted, ("fps: " + str(fps)), (int(80), int(440)), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
+
+            self.frame_ready.emit(self.id, res_plotted, categorias, peso)
+            
+            time.sleep(0.03) 
+
+    def stop(self):
+        self.stopFlag = True
+        self.wait()
+    
+    def frameInference(self, frame, sectionLim=200):
         self.lim = sectionLim
         frame_det = frame[:self.lim, :, :].copy()
         with torch.no_grad():
-            results = self.model.track(frame_det, conf = self.conf, iou = self.iou, persist=True, verbose = False, show_labels=False, show_conf=False, augment=False)
+            results = self.modelo.track(frame_det, conf = self.conf, iou = self.iou, persist=True, verbose = False, show_labels=False, show_conf=False, augment=False)
         return results
     
-    
-    def mainPotato(self):
-        
-        BASE_PATH = "models/"
-        modelName = "potato_seg3s.pt"
-        self.model = YOLO(BASE_PATH + modelName, task = 'segment')
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        ic(device)
-        #self.model.to(device)
-        while True:
-            self.ret, depthFrame, frame, _ = self.camara.getFrame()
-            if self.ret:
-                ic("yey")
-                results = self.frameInference(frame)
-                self.frame = self.drawInference(frame, depthFrame, results)
 
+    
     def drawInference(self, frame, depthFrame, results, showFPS=True, countOffset = 50):
+        #datos = {"Total": 0, "Suprema": 0, "Primera": 0, "Segunda": 0, "Tercera": 0, "cuarta": 0, }
+        datos = []
+        pesoTotal = 0.0
+
+        frame = self.drawBigotes(frame, countOffset)
         if 0 in results[0].boxes.shape or results[0].boxes.id == None:
             pass
         else:
@@ -117,36 +132,23 @@ class MultiPapa():
 
                             volumen = calculateVolume(sizeX_mm, sizeY_mm)
                             masa = calculateMass(volumen)
-                            ic(f"masa = {masa * 1000} gr")
+                            #ic(f"masa = {masa * 1000} gr")
 
                             categoria = self.getCategory(sizeY_mm)
 
                             if categoria:
-                                self.ConexionBD.Incremento("CantidadObservada", self.idPasada)
-                                self.ConexionBD.Incremento(categoria, self.idPasada)
-                                self.ConexionBD.Incremento("PesoTotal", self.idPasada, round(masa, 4))
-
-                                #self.ConexionBD.Incremento("Total", self.idRendimiento)
-                                #self.ConexionBD.Incremento(categoria, self.idRendimiento)
-                                #self.ConexionBD.Incremento("Peso", self.idRendimiento)
+                                datos.append(categoria)
+                                pesoTotal += round(masa, 3)
                             else:
-                                print("ta mu shica")
-                            
+                                ic("ta mu shica")
                         except Exception as e :
-                            print("Error -> insertFlag: ", e)
-                            
+                            ic("Error -> insertFlag: ", e)
                 else:
                     x_potato, y_potato, z_potato, _ = self.getSize(box, depthFrame)                                
                     cv2.circle(frame, (int(x), int(y)), 3, (150, 255, 100), thickness = 4)
                     cords = "X" + str(round(float(x_potato))) + " Y" + str(round(float(y_potato)))
                     cv2.putText(frame, cords, (int(x), int(y + 20)), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,0,0), 1)
-                    
-        #frame = results[0].plot()
-        frame = self.drawBigotes(frame, countOffset)
-        if True:
-            fps = int(1/(time.time() - self.tiempoFrame))
-            cv2.putText(frame, ("fps: " + str(fps)), (int(80), int(440)), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0,255,0), 2)
-        return frame
+        return frame, datos, pesoTotal
     
     def getSize(self, box, depthFrame):
         try:
@@ -154,6 +156,7 @@ class MultiPapa():
             profundidad = depthFrame[int(y/4), int(x/4)]
 
             if profundidad == 0:
+                #ic("ALERTA: Profundidad --> 0")
                 profundidad = 300
             
             ancho = profundidad * 2

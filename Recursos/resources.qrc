@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="Recursos">
+    <file>Icons/leftArrowB.svg</file>
+    <file>Icons/leftArrowW.svg</file>
+    <file>Icons/rightArrowB.svg</file>
+    <file>Icons/rightArrowW.svg</file>
     <file>Icons/upArrowW.svg</file>
     <file>Icons/upArrowB.svg</file>
     <file>Icons/addB.svg</file>

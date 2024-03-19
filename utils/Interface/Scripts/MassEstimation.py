@@ -5,7 +5,7 @@ import math
 def calculateVolume(minorAxis: float, majorAxis: float) -> float:
         ic(minorAxis, majorAxis)
         volumen = (4 * math.pi * (majorAxis/2000) * (minorAxis/2000)**2)/3
-        ic(volumen)
+        #ic(volumen)
         return volumen
 
 def calculateMass(volumen: float) -> float:
