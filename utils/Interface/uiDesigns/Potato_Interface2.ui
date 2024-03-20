@@ -5887,7 +5887,7 @@ color: rgb(255, 255, 255);}
 </string>
            </property>
            <property name="text">
-            <string>  Iniciar Video</string>
+            <string>  Iniciar Conteo</string>
            </property>
            <property name="icon">
             <iconset resource="../../../Recursos/resources.qrc">
@@ -5927,7 +5927,7 @@ color: rgb(255, 255, 255);}
            <property name="font">
             <font>
              <family>Ubuntu</family>
-             <pointsize>28</pointsize>
+             <pointsize>26</pointsize>
              <bold>true</bold>
             </font>
            </property>
@@ -5947,7 +5947,7 @@ color: rgb(255, 255, 255);
 </string>
            </property>
            <property name="text">
-            <string>   Parar Video</string>
+            <string> Terminar Conteo</string>
            </property>
            <property name="icon">
             <iconset resource="../../../Recursos/resources.qrc">

@@ -9,7 +9,7 @@ from utils.Interface.uiDesigns.addParcelaWindow import Ui_addParcelaWindow
 from utils.Interface.uiDesigns.addCosechaWindow import Ui_addCosechaWindow
 from utils.Interface.Scripts.Validation import validate
 from utils.Interface.Scripts.BaseWindowClasses import BaseInsertWindow
-from utils.GPS.Coordinates import getCoordinates
+from utils.GPS.GpsClass import GpsConnection
 from utils.Interface.ObjectDictionaries import ValidationDict
 
 class InsertRanchoWindow(BaseInsertWindow, Ui_addRanchoWindow):
@@ -19,13 +19,20 @@ class InsertRanchoWindow(BaseInsertWindow, Ui_addRanchoWindow):
         self.setupUi(self)
         self.errorLabel.hide()
         self.setLineEditDict(ValidationDict[key])
+        #self.gps = GpsConnection()
 
     def setIdxs(self, idCliente):
         self.idCliente = idCliente
 
     def setCoordinates(self):
-        self.addLongitudLineEdit.setText("1234.56789")
-        self.addLatitudLineEdit.setText("12345.67890")
+        #latitud, longitud = self.gps.getCurrentCords()
+        latitud, longitud = "1234.56789", "12345.6789"
+        if latitud is not None and longitud is not None:
+            self.addLatitudLineEdit.setText(str(latitud))
+            self.addLongitudLineEdit.setText(str(longitud))
+        else:
+            self.errorLabel.setText("Error al obtener coordenadas, verifique conexión del GPS")
+            self.errorLabel.show()
 
     def finalValidations(self, data: dict) -> None:
         data["Coordenadas"] = str(self.addLatitudLineEdit.text() + " " + self.addLongitudLineEdit.text())
@@ -66,16 +73,19 @@ class InsertParcelaWindow(BaseInsertWindow, Ui_addParcelaWindow):
         self.errorLabel.hide()
         self.addFechaDateEdit.setDate(QDate.currentDate())    
         self.setLineEditDict(ValidationDict[key])
+        #self.distance = GpsObject
+        #self.gps = GpsConnection()
     
     def setIdxs(self, idRancho, idVariedad):
         self.idRancho = idRancho
         self.idVariedad = idVariedad
-
+    
     def setCoordinates(self):
-        cords, latitud, longitud = getCoordinates()
-        if cords:
-            self.addLongitudLineEdit.setText(str(latitud))
-            self.addLatitudLineEdit.setText(str(longitud))
+        #latitud, longitud = self.gps.getCurrentCords()
+        latitud, longitud = "1234.56789", "12345.6789"
+        if latitud is not None and longitud is not None:
+            self.addLatitudLineEdit.setText(str(latitud))
+            self.addLongitudLineEdit.setText(str(longitud))
         else:
             self.errorLabel.setText("Error al obtener coordenadas, verifique conexión del GPS")
             self.errorLabel.show()

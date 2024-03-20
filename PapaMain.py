@@ -20,7 +20,7 @@ from utils.Interface.PopupWindows import ConfirmWindow, MessageWindow
 from utils.Interface.InsertDataWindows import InsertRanchoWindow, InsertVariedadWindow, InsertParcelaWindow, InsertCosechaWindow
 from utils.Interface.Scripts.Graph import GraphClass
 from utils.Interface.Scripts.Brightness import Brisho
-from utils.GPS.Coordinates import getCoordinates
+from utils.GPS.GpsClass import GpsConnection
 from utils.Interface.Scripts.Validation import validate
 from utils.DB.potatoDB import *
 from utils.DB.datosConexionBD import Datos
@@ -30,7 +30,7 @@ from utils.MultiPotato import Potato
 class Papainador(QDialog, Ui_Papainador):
     #estandares = ['Suprema', 'Primera', 'Segunda', 'Tercera', 'Cuarta']
     idMaquina = 1
-    twoCams = False
+    save_run = True
 
     def __init__(self):
         super(Papainador, self).__init__()
@@ -63,14 +63,39 @@ class Papainador(QDialog, Ui_Papainador):
         self.addNewParcela = InsertParcelaWindow(screen, self.ConexionBD, self.handleParcelaAddition, "Parcela")
         self.addNewCosecha = InsertCosechaWindow(screen, self.ConexionBD, self.handleCosechaAddition, "Cosecha")
         
+        #Crear folder para guardar imagenes de pruebas
+        if not self.save_run:
+            folderId = None
+        else:
+            main_dir = os.getcwd()
+            os.chdir('Pruebas')
+            folders = [name for name in os.listdir('.') if os.path.isdir(name)]
+            numbers = []
+            for folder in folders:
+                try:
+                    number = int(folder)
+                    numbers.append(number)
+                except ValueError:
+                    pass
+            if numbers:
+                next_number = max(numbers) + 1
+            else:
+                next_number = 1
+            folderId = str(next_number)
+            os.makedirs(folderId)
+            ic(f"Folder {folderId} created")
+            os.chdir(main_dir)
+
         #Inicializar modelos y camaras
         self.serialNumbers = ["215122252177", "234322304889"]
         self.model1 = YOLO("models/potato_seg3s.pt")
         self.model2 = YOLO("models/potato_seg3s.pt")
-        self.papa1 = Potato(self.serialNumbers[0], self.model1, 1)
-        self.papa2 = Potato(self.serialNumbers[1], self.model2, 2)
+        self.papa1 = Potato(self.serialNumbers[0], self.model1, 1, folderId)
+        self.papa2 = Potato(self.serialNumbers[1], self.model2, 2, folderId)
         self.papa1.frame_ready.connect(self.updateFrame)
         self.papa2.frame_ready.connect(self.updateFrame)
+        #self.ConexionGps = GpsConnection()
+        #self.ConexionGps.nextBlock.connect(self.nextIdRendimiento)
 
         self.statusMessage = MessageWindow(screen, self.enableScreen)
 
@@ -78,12 +103,7 @@ class Papainador(QDialog, Ui_Papainador):
         #Crear timers para la lectura de frames, runtime, grafica y reloj
         fps = 10
         self.ms = int(1000/fps)
-        #self.timerFrame = QTimer(self)
-        #self.timerFrame.timeout.connect(self.updateFrame)
-        
-        #if self.twoCams:
-        #    self.timerFrame2 = QTimer(self)
-        #    self.timerFrame2.timeout.connect(self.updateFrame2)
+
 
         self.timerGraph = QTimer(self)
         self.timerGraph.timeout.connect(self.graphData)
@@ -208,6 +228,7 @@ class Papainador(QDialog, Ui_Papainador):
         self.cosechaLabel.setText("None")
         self.userLabel.setText("Username")
         self.runTimeLabel.setText("0")
+        self.contadorLabel.setText("0")
     
     ######################## Side Panel Events ########################
     #powerOff button event
@@ -246,11 +267,16 @@ class Papainador(QDialog, Ui_Papainador):
             self.idPasada = self.ConexionBD.ConsultaUltimaPasada(self.idCosecha)
             self.loadGraphComboBoxData()
 
-            cords, latitud, longitud = getCoordinates()
+            #cords, latitud, longitud = getCoordinates()
             
             #self.timerFrame.start(self.ms)
             #if self.twoCams:
             #    self.timerFrame2.start(self.ms)
+            if self.save_run:
+                pass
+                #self.papa1.setFolderId(self.idPasada)
+                #self.papa2.setFolderId(self.idPasada)
+
             self.papa1.stopFlag = False
             self.papa2.stopFlag = False
             self.papa1.start()
@@ -281,9 +307,19 @@ class Papainador(QDialog, Ui_Papainador):
             self.ret = True
             self.updateStatus()
         else:
-            self.statusCam1 = False
-            self.statusCam2 = False
+            #self.statusCam1 = False
+            #self.statusCam2 = False
             self.setEnabled(False)
+
+            camsConnected = 0
+            if self.statusCam1:
+                camsConnected += 1
+            if self.statusCam2:
+                camsConnected += 1
+            ic(camsConnected)
+            self.cameraDisconnected.updateText("Cámara(s) desconectada(s)", 
+                                            f"Se detectaron: {camsConnected} de 2 cámaras necesarias\n"
+                                            "¿Reintentar conexión?")
             self.cameraDisconnected.showDialog()
 
     def handleDisconnection(self, accion):
@@ -313,6 +349,7 @@ class Papainador(QDialog, Ui_Papainador):
         bytesPerLine = 3 * width
         qImg = QImage(self.frame.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
         self.lastFrame.setPixmap(QPixmap.fromImage(qImg))
+        sleep(2)
         self.mainFrame1.clear()
         self.mainFrame2.clear()
         
@@ -355,6 +392,10 @@ class Papainador(QDialog, Ui_Papainador):
             self.cameraStackedWidget.setCurrentIndex(0)
             self.cameraNumberLabel.setText("Camara 1")
 
+    """ @pyqtSlot
+    def nextIdRendimiento(self, lat, long):
+        self.ConexionBD.InsertarNuevoBloque()
+        self.idRendimiento += 1 """
 
     def lastFrameView(self):
         self.updateButtonIndex(0)

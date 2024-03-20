@@ -2,31 +2,27 @@ from icecream import ic
 
 import math
 
-from getRatio import metersPerDegree
+from utils.GPS.getRatio import metersPerDegree
 
 class CoordinateDistance():
     def __init__(self):
         ...
 
     def setStartPoints(self, lat: float, long: float) -> None:
-        self.lat = lat
-        self.long = long
+        self.latitude = lat
+        self.longitude = long
 
     def convertToDegrees(self, coordenada, digits):
         grados = int(coordenada[:digits])
         minutos_decimales = float(coordenada[2:]) / 60.0
         return grados + minutos_decimales
+    
+    def setRatio(self, lat: float):
+        self.ratio = metersPerDegree(lat)
 
-    def calcular_distancia(self, latIn, longIn, latFin, longFin):
-        # Convertir coordenadas a grados decimales
-        latIn_dec = self.convertToDegrees(latIn, 2)
-        longIn_dec = self.convertToDegrees(longIn, 3)
-        latFin_dec = self.convertToDegrees(latFin, 2)
-        longFin_dec = self.convertToDegrees(longFin, 3)
-        ratio = metersPerDegree((latIn_dec + latFin_dec)/2)
-
+    def calculateDistance(self, latFin, longFin):
         # Calcular la distancia euclidiana en metros (fórmula plana)
-        distancia = math.sqrt((latFin_dec - latIn_dec)**2 + (longFin_dec - longIn_dec)**2) * ratio
+        distancia = math.sqrt((latFin - self.latitude)**2 + (longFin - self.longitude)**2) * self.ratio
 
         return distancia
 

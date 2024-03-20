@@ -34,6 +34,10 @@ class ConfirmWindow(BaseWindow, Ui_confirmWindow):
     def doDialogAction(self):
         self.accion = True
         self.exit()
+    
+    def updateText(self, title, text):
+        self.titleLabel.setText(title)
+        self.questionLabel.setText(text)
 
 
 

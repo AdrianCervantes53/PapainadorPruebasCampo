@@ -27,15 +27,14 @@ class CustomThread(QThread):
         self.id = id
         self.camara = DepthCamera(serial)
         self.stopFlag = False
-        
-        
+
     def run(self):
         while not self.stopFlag:
             tiempoFrame = time.time()
             ret, df, frame, _ = self.camara.getFrame()
             if ret:
-                results = self.modelo.track(frame, persist=True, verbose=False)
-                res_plotted = results[0].plot()
+                results = self.modelo.track(frame, persist=True, verbose=False, classes=[0])
+                res_plotted = results[0].plot(labels=False, conf=False, boxes=False)
 
                 fps = int(1 / (time.time() - tiempoFrame))
                 cv2.putText(res_plotted, ("fps: " + str(fps)), (int(80), int(440)), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
@@ -52,8 +51,8 @@ class Espiropapainador(QDialog, Ui_MultithreadInterface):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.model1 = YOLO("potato_seg3s.pt")
-        self.model2 = YOLO("potato_seg3s.pt")
+        self.model1 = YOLO("models/potato_seg3s.pt")
+        self.model2 = YOLO("models/potato_seg3s.pt")
         self.serialNumbers = ["215122252177", "234322304889"]
         self.thread1 = CustomThread(self.serialNumbers[0], self.model1, 1)
         self.thread2 = CustomThread(self.serialNumbers[1], self.model2, 2)

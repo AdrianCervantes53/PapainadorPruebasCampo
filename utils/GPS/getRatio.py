@@ -2,7 +2,7 @@ from icecream import ic
 
 import math
 
-from EarthRadius import CalculateRadius
+from utils.GPS.EarthRadius import CalculateRadius
 
 def metersPerDegree(Latitude: float) -> float:
     radius = CalculateRadius(Latitude)
