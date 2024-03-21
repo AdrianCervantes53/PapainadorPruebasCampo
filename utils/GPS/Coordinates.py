@@ -13,7 +13,9 @@ def getCoordinates() -> tuple[bool, float, float]:
 if __name__ == "__main__":
     import serial
     import math
-    ser= serial.Serial('COM4',38400)
+    from icecream import ic
+    #ser= serial.Serial('COM4',38400)
+    ser= serial.Serial('COM5',9600)
     f=1
     contador=0
     radio_tierra=40075000.0/(360*60)
@@ -21,13 +23,16 @@ if __name__ == "__main__":
     if ser:
         while True:
             lectura=ser.readline().decode('utf-8').strip()
+            ic(lectura)
             lectura=lectura.split(",")
 
             latitud=(lectura[2])
             longitud=(lectura[4])
+            ic(latitud)
+            ic(longitud)
             
             #latitud_grados=float(latitud[:2])
-            latitud_minutos=float((latitud[2:]))
+            """ latitud_minutos=float((latitud[3:]))
             latitud_gd=latitud_minutos
 
             #longitud_grados=float(longitud[:3])
@@ -49,4 +54,4 @@ if __name__ == "__main__":
                 primera_lon=longitud_gd
                 contador+=1
 
-            print(f"Latitud: {latitud}, Longitud: {longitud}, Distancia:{distancia}, Bloques: {contador}")
+            print(f"Latitud: {latitud}, Longitud: {longitud}, Distancia:{distancia}, Bloques: {contador}") """

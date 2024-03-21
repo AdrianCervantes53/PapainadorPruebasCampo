@@ -34,7 +34,21 @@ class CustomThread(QThread):
             ret, df, frame, _ = self.camara.getFrame()
             if ret:
                 results = self.modelo.track(frame, persist=True, verbose=False, classes=[0])
-                res_plotted = results[0].plot(labels=False, conf=False, boxes=False)
+                #res_plotted = results[0].plot(labels=False, conf=False, boxes=False)
+
+                res_plotted = frame
+                
+                for con in results[0].masks.xy:
+                    #ic(np.shape(con))
+                    ic(len(con))
+                    if len(con) >= 5:
+                        c = np.array(con, dtype=np.int32)
+                        c = c.reshape((-1, 1, 2))
+                        ellipse = cv2.fitEllipse(c[0])
+                        cv2.ellipse(res_plotted, ellipse, (255,0,0), 2)
+                        #c = (c,)
+                        #ic(np.shape(c))
+                        #cv2.drawContours(res_plotted, [c], -1, (0, 255, 0), 2)
 
                 fps = int(1 / (time.time() - tiempoFrame))
                 cv2.putText(res_plotted, ("fps: " + str(fps)), (int(80), int(440)), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)

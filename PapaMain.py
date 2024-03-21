@@ -30,7 +30,7 @@ from utils.MultiPotato import Potato
 class Papainador(QDialog, Ui_Papainador):
     #estandares = ['Suprema', 'Primera', 'Segunda', 'Tercera', 'Cuarta']
     idMaquina = 1
-    save_run = True
+    save_run = False
 
     def __init__(self):
         super(Papainador, self).__init__()
@@ -64,7 +64,7 @@ class Papainador(QDialog, Ui_Papainador):
         self.addNewCosecha = InsertCosechaWindow(screen, self.ConexionBD, self.handleCosechaAddition, "Cosecha")
         
         #Crear folder para guardar imagenes de pruebas
-        if not self.save_run:
+        """ if not self.save_run:
             folderId = None
         else:
             main_dir = os.getcwd()
@@ -84,16 +84,15 @@ class Papainador(QDialog, Ui_Papainador):
             folderId = str(next_number)
             os.makedirs(folderId)
             ic(f"Folder {folderId} created")
-            os.chdir(main_dir)
+            os.chdir(main_dir) """
 
         #Inicializar modelos y camaras
         self.serialNumbers = ["215122252177", "234322304889"]
         self.model1 = YOLO("models/potato_seg3s.pt")
         self.model2 = YOLO("models/potato_seg3s.pt")
-        self.papa1 = Potato(self.serialNumbers[0], self.model1, 1, folderId)
-        self.papa2 = Potato(self.serialNumbers[1], self.model2, 2, folderId)
-        self.papa1.frame_ready.connect(self.updateFrame)
-        self.papa2.frame_ready.connect(self.updateFrame)
+        self.papa1 = Potato(self.serialNumbers[0], self.model1, 1, first=True)
+        self.papa2 = Potato(self.serialNumbers[1], self.model2, 2, first=True)
+        
         #self.ConexionGps = GpsConnection()
         #self.ConexionGps.nextBlock.connect(self.nextIdRendimiento)
 
@@ -260,12 +259,26 @@ class Papainador(QDialog, Ui_Papainador):
 
         ret1 = self.papa1.checkConnection()
         ret2 = self.papa2.checkConnection()
-        if self.statusCam1 and ret1 and self.statusCam2 and ret2:             #Inicia video si detecta la camara y puede leer frames, sino intenta reconexion
-            ic("video started")
+        if self.statusCam1 and ret1 or self.statusCam2 and ret2:             #Inicia video si detecta la camara y puede leer frames, sino intenta reconexion
+            ic("Starting Video...")
 
             self.ConexionBD.InsertarNuevaPasada(self.idCosecha, datetime.now())
             self.idPasada = self.ConexionBD.ConsultaUltimaPasada(self.idCosecha)
             self.loadGraphComboBoxData()
+            ic(self.idPasada)
+            idFolder = None
+            if self.save_run:
+                idFolder = str(self.idPasada)
+                main_dir = os.getcwd()
+                os.chdir('Pruebas')
+                os.makedirs(idFolder)
+                ic(f"Folder {idFolder} created")
+                os.chdir(main_dir)
+
+            self.papa1 = Potato(self.serialNumbers[0], self.model1, 1, idFolder)
+            self.papa2 = Potato(self.serialNumbers[1], self.model2, 2, idFolder)
+            self.papa1.frame_ready.connect(self.updateFrame)
+            self.papa2.frame_ready.connect(self.updateFrame)
 
             #cords, latitud, longitud = getCoordinates()
             
@@ -281,7 +294,6 @@ class Papainador(QDialog, Ui_Papainador):
             self.papa2.stopFlag = False
             self.papa1.start()
             self.papa2.start()
-
             
             self.timerGraph.start(1000)
 
@@ -392,10 +404,7 @@ class Papainador(QDialog, Ui_Papainador):
             self.cameraStackedWidget.setCurrentIndex(0)
             self.cameraNumberLabel.setText("Camara 1")
 
-    """ @pyqtSlot
-    def nextIdRendimiento(self, lat, long):
-        self.ConexionBD.InsertarNuevoBloque()
-        self.idRendimiento += 1 """
+    
 
     def lastFrameView(self):
         self.updateButtonIndex(0)
@@ -479,8 +488,19 @@ class Papainador(QDialog, Ui_Papainador):
         ic(self.statusCam1)
         ic(self.statusCam2)
 
+    @pyqtSlot(tuple, tuple)
+    def nextIdRendimiento(self, lat, long):
+        self.ConexionBD.InsertarNuevoBloque()
+        self.idRendimiento += 1
+
     def tryGpsConnection(self):
-        self.gps = not self.gps
+        if self.gps:    
+            return
+        self.ConexionGPS = GpsConnection()
+        self.gps = self.ConexionGPS.active
+        if self.gps:
+            self.ConexionGPS.start()
+
         self.updateStatus()
 
     def tryWifiConnection(self):

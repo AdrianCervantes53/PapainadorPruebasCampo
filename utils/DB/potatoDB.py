@@ -425,6 +425,8 @@ class Creacion:
     def __init__(self, Datos):
         self.Datos=Datos
         engine = create_engine(f'mssql+pyodbc://{self.Datos["User"]}:{self.Datos["Pwd"]}@{self.Datos["nameServer"]}/{self.Datos["nameDB"]}?driver=ODBC+Driver+17+for+SQL+Server')
+        engine = create_engine(f'mssql+pyodbc://{self.Datos["nameServer"]}/{self.Datos["nameDB"]}?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes')
+
         Base.metadata.create_all(bind = engine)
         Session = sessionmaker(bind = engine)
         self.session = Session()

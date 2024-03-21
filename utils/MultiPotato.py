@@ -20,7 +20,7 @@ class Potato(QThread):
     calibres = {"Suprema": 140, "Primera": 110, "Segunda": 80, "Tercera": 60, "Cuarta": 40}
                 #                    220+    ,   185-220    ,    150-185   ,     120-150
 
-    def __init__(self, serialNumber, model, id, folder = 0):
+    def __init__(self, serialNumber, model, id, folder = 0, first=False, sectionLim=480, sectionLim2=0):
         super().__init__()
         self.modelo = model
         self.id = id
@@ -31,6 +31,8 @@ class Potato(QThread):
         self.setParameters()
         self.papa_contada = []
         self.contador = 0
+        self.lim = sectionLim
+        self.lim2 = sectionLim2
     
     def cameraCreation(self, serialNumber: str):
         self.camara = DepthCamera(serialNumber)
@@ -75,9 +77,7 @@ class Potato(QThread):
         self.stopFlag = True
         self.wait()
     
-    def frameInference(self, frame, sectionLim=480, sectionLim2=0): #320,160
-        self.lim = sectionLim
-        self.lim2 = sectionLim2
+    def frameInference(self, frame): #320,160
         #self.frameUp = frame[:sectionLim2, :, :].copy()
         #self.frameDown = frame[sectionLim:, :, :].copy()
         #frame_det = frame[sectionLim2:sectionLim, :, :].copy()
@@ -85,12 +85,11 @@ class Potato(QThread):
             results = self.modelo.track(frame, conf=self.conf, iou=self.iou, classes=[0], persist=True, verbose=False, augment=False)
         return results
     
-    
-    def drawInference(self, frame, depthFrame, results, showFPS=True, countOffset = 60):
+    def drawInference(self, frame, depthFrame, results, countOffset = 60):
         #datos = {"Total": 0, "Suprema": 0, "Primera": 0, "Segunda": 0, "Tercera": 0, "cuarta": 0, }
         datos = []
         pesoTotal = 0.0
-        frame = results[0].plot(labels=False, conf=False, boxes=False)
+        #frame = results[0].plot(labels=False, conf=False, boxes=False)
         frame = self.drawBigotes(frame, countOffset)
         
         if 0 in results[0].boxes.shape or results[0].boxes.id == None:
@@ -100,6 +99,7 @@ class Potato(QThread):
         boxes = results[0].boxes.xywh.cpu()
         track_ids = results[0].boxes.id.int().cpu().tolist()
         masks = results[0].masks.data
+        #masks2 = results[0].masks.xy
 
         for box, track_id, mask in zip(boxes, track_ids, masks):
             m = np.array(mask.cpu())
@@ -112,7 +112,6 @@ class Potato(QThread):
             x, y, w, h = box
             #y += int(self.lim2/2)
             contorno, _ = cv2.findContours(imagen, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
             if track_id not in self.papa_contada:
                 
                 x_potato, y_potato, z_potato, pxmm = self.getSize(box, depthFrame, True)
@@ -183,7 +182,7 @@ class Potato(QThread):
     def getSize(self, box, depthFrame, alert=False):
         try:
             x, y, w, h = box
-            y += int(self.lim2/2)
+            #y += int(self.lim2/2)
             profundidad = depthFrame[int(y/4), int(x/4)]
 
             if profundidad == 0:
@@ -203,7 +202,7 @@ class Potato(QThread):
     
     def drawBigotes(self, frame, countOffset):
         cv2.line(frame,(0, self.lim - countOffset), (int(self.camara.w), self.lim - countOffset),(50, 200, 0), 2)
-        cv2.line(frame,(0, self.lim), (int(self.camara.w), self.lim),(200, 100, 50), 2)
-        cv2.line(frame,(0, self.lim2), (int(self.camara.w), self.lim2),(200, 100, 50), 2)
+        #cv2.line(frame,(0, self.lim), (int(self.camara.w), self.lim),(200, 100, 50), 2)
+        #cv2.line(frame,(0, self.lim2), (int(self.camara.w), self.lim2),(200, 100, 50), 2)
         cv2.line(frame,(0, self.lim2 + countOffset), (int(self.camara.w), self.lim2 + countOffset),(50, 200, 0), 2)
         return frame

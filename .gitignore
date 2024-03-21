@@ -4,3 +4,4 @@ models/potato_seg4s.pt
 .vscode/settings.json
 Pruebas/
 __pycache__/
+evidencia/

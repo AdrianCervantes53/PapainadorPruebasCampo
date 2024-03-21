@@ -8,20 +8,21 @@ from utils.GPS.calculateDistance import CoordinateDistance
 
 class GpsConnection(QThread):
     nextBlock = pyqtSignal(tuple, tuple)
-    def __init__(self, puerto = 'COM4', baudrate = 38400) -> None:
+    def __init__(self, puerto = 'COM5', baudrate = 38400) -> None:
         super().__init__()
         self.distance = CoordinateDistance()
-        self.active = self.connect(puerto, baudrate)
+        self.active = self.connectGps(puerto, baudrate)
         self.block = False
         self.stopFlag = False
 
-    def connectGps(self, puerto: str ='COM4', baudrate: int = 38400) -> bool:
+    def connectGps(self, puerto: str ='COM5', baudrate: int = 38400) -> bool:
         try:
             self.ser= serial.Serial(puerto, baudrate)
             return True
         except serial.SerialException as e:
             ic(f"Error al conectar gps: {e}")
-            return False    
+            return False
+
     def getLatLong(self) -> tuple[float, float]:
         lectura = self.ser.readline().decode('utf-8').strip()
         lectura = lectura.split(",")
