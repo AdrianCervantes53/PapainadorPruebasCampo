@@ -159,8 +159,8 @@ class Papainador(QDialog, Ui_Papainador):
         self.currentDataFlag = False
         self.loadDefaultData()
         self.tryCamConnection()
+        self.tryGpsConnection()
         
-
         self.loadRanchoData()
 
         self.logoutButton.show()
@@ -492,9 +492,10 @@ class Papainador(QDialog, Ui_Papainador):
     def nextIdRendimiento(self, lat, long):
         self.ConexionBD.InsertarNuevoBloque()
         self.idRendimiento += 1
+        ic(self.idRendimiento)
 
     def tryGpsConnection(self):
-        if self.gps:    
+        if self.gps:
             return
         self.ConexionGPS = GpsConnection()
         self.gps = self.ConexionGPS.active

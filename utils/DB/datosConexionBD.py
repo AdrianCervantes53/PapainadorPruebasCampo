@@ -1,5 +1,5 @@
 Datos = {"User" : "sa",
-        "Pwd" : "gpa2023",
+        "Pwd" : "12345",
          "nameServer" : "E-PIM_06",
          "nameDB" : "Potato"
     }
